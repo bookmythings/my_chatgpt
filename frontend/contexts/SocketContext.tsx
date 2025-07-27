@@ -1,11 +1,11 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
+import socketIO from 'socket.io-client';
 import { useAuth } from './AuthContext';
 
 interface SocketContextType {
-  socket: Socket | null;
+  socket: ReturnType<typeof socketIO> | null;
   isConnected: boolean;
   joinProject: (projectId: string) => void;
   leaveProject: (projectId: string) => void;
@@ -22,7 +22,7 @@ export const useSocket = () => {
 };
 
 export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const [socket, setSocket] = useState<ReturnType<typeof socketIO> | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const { token, user } = useAuth();
 
@@ -30,7 +30,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (token && user) {
       const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000';
       
-      const newSocket = io(socketUrl, {
+      const newSocket = socketIO(socketUrl, {
         auth: {
           token,
         },
@@ -46,7 +46,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setIsConnected(false);
       });
 
-      newSocket.on('connect_error', (error) => {
+      newSocket.on('connect_error', (error: Error) => {
         console.error('Connection error:', error);
       });
 
